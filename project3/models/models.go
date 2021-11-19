@@ -14,6 +14,12 @@ type Author struct {
 	Age       int    `json:"age" validate:"required,min=1,max=100"`
 }
 
+type User struct {
+	Email           string `json:"email" validate:"required"`
+	Password        string `json:"password" validate:"required"`
+	ConfirmPassword string `json:"confirmpassword" validate:"omitempty"`
+}
+
 type Response struct {
 	Data       interface{}
 	Status     string

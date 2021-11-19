@@ -3,10 +3,16 @@ package cache
 import "github.com/go-redis/redis"
 
 type RedisStore interface {
-	GetByKey(key string) (string, error)
-	GetAllByKey() (string, error)
-	SetValueByKey(key string, value string) error
-	DelValueByKey(key string) error
+	GetBookByKey(key string) (string, error)
+	GetAllBooksByKey() (string, error)
+	SetBookValueByKey(key string, value string) error
+	DelBookValueByKey(key string) error
+	DelUserJWTByKey(key string) error
+	AddUserByKey(key string, value string, jwttoken string) error
+	AddJWTByKey(key string, value string) error
+	CheckUserByKey(key string) bool
+	CheckUserLoggedInByKey(key string) bool
+	GetUserByKey(key string) (string, error)
 }
 
 type RedisClient struct {

@@ -3,10 +3,10 @@ package routes
 import (
 	"log"
 
-	"github.com/gorilla/mux"
-
 	"project3/cache"
 	services "project3/services"
+
+	"github.com/gorilla/mux"
 )
 
 func NewRouter() *mux.Router {
@@ -19,11 +19,14 @@ func NewRouter() *mux.Router {
 
 	services := &services.Services{}
 	services.SetRedis(redisDB)
-	r.HandleFunc("/api/books", services.GetBooks).Methods("GET")
-	r.HandleFunc("/api/books/{id}", services.GetBook).Methods("GET")
-	r.HandleFunc("/api/books", services.CreateBook).Methods("POST")
-	r.HandleFunc("/api/books/{id}", services.UpdateBook).Methods("PUT")
-	r.HandleFunc("/api/books/{id}", services.DeleteBook).Methods("DELETE")
+	r.HandleFunc("/signup", services.RegisterUser).Methods("POST")
+	r.HandleFunc("/signin", services.LoginUser).Methods("GET")
+	r.HandleFunc("/signout", services.LogoutUser).Methods("GET")
+	r.HandleFunc("/library/books", services.GetBooks).Methods("GET")
+	r.HandleFunc("/library/books/{id}", services.GetBook).Methods("GET")
+	r.HandleFunc("/library/books", services.CreateBook).Methods("POST")
+	r.HandleFunc("/library/books/{id}", services.UpdateBook).Methods("PUT")
+	r.HandleFunc("/library/books/{id}", services.DeleteBook).Methods("DELETE")
 
 	return r
 }

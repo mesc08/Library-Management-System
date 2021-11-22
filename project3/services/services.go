@@ -3,7 +3,9 @@ package services
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
+	"os"
 	"project3/cache"
 	models "project3/models"
 	"regexp"
@@ -12,16 +14,25 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-playground/validator"
+	"github.com/joho/godotenv"
 	"github.com/rs/xid"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/gorilla/mux"
 )
 
-const secretkey = "srijanchakraborty1374"
-
 type Services struct {
 	redis *cache.RedisClient
+}
+
+func getEnvVariable(key string) string {
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	return os.Getenv(key)
 }
 
 func (service *Services) Redis() *cache.RedisClient {
@@ -336,7 +347,7 @@ func CheckAuth(jwtToken string, service *Services) error {
 func Authenticate(jwtToken string) (string, bool) {
 	claims := jwt.MapClaims{}
 	_, err := jwt.ParseWithClaims(jwtToken, claims, func(t *jwt.Token) (interface{}, error) {
-		return []byte(secretkey), nil
+		return []byte(getEnvVariable("secretkey")), nil
 	})
 	if err != nil {
 		return "", false
@@ -426,7 +437,7 @@ func isValidateEmail(email string) bool {
 }
 
 func GenerateJWT(email string) (string, error) {
-	var mySigningkey = []byte(secretkey)
+	var mySigningkey = []byte(getEnvVariable("secretkey"))
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["email"] = email

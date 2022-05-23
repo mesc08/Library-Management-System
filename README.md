@@ -4,7 +4,7 @@
 
 ### File Structure
 
-`
+```
 ├── cache
 │   ├── db.go
 │   └── init.go
@@ -16,13 +16,13 @@
 ├── routes
 │   └── routes.go
 └── services
-    └── services.go`
-
-
+    └── services.go
+```
 #### Technology Used
 
 `
 1. Golang
 2. Redis
-3. JsonWebToken`
+3. JsonWebToken
+4. Mysql
 

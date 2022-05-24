@@ -1,9 +1,0 @@
-{
-    "RedisHost": "127.0.0.1:6379",
-    "MysqlHost": "127.0.0.1",
-    "MysqlPort": 3306,
-    "MysqlUser": "root1",
-    "MysqlPassword": "welcome123",
-    "MysqlDBName": "student_book_management",
-    "SecretKey": "srijan123"
-}

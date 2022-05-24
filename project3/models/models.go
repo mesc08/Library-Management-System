@@ -9,12 +9,14 @@ type Book struct {
 }
 
 type Author struct {
-	Firstname string `json:"firstname" validate:"required"`
-	Lastname  string `json:"lastname" validate:"required"`
-	Age       int    `json:"age" validate:"required,min=1,max=100"`
+	Name    string `json:"name" validate:"required"`
+	Country string `json:"country" validate:"required"`
 }
 
 type User struct {
+	UserId          string `json:"userid" validate:"omitempty"`
+	FirstName       string `json:"firstname" validate:"required"`
+	LastName        string `json:"lastname" validate:"required"`
 	Email           string `json:"email" validate:"required"`
 	Password        string `json:"password" validate:"required"`
 	ConfirmPassword string `json:"confirmpassword" validate:"omitempty"`

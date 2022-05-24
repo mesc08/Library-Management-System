@@ -1,0 +1,9 @@
+{
+    "RedisHost": "",
+    "MysqlHost": "",
+    "MysqlPort": 0,
+    "MysqlUser": "",
+    "MysqlPassword": "",
+    "MysqlDBName": "",
+    "SecretKey": ""
+}

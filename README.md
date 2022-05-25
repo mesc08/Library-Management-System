@@ -4,19 +4,27 @@
 
 ### File Structure
 
-```
+```.
 ├── cache
-│   ├── db.go
-│   └── init.go
+│   └── cache.go
+├── config
+│   └── config.go
+├── config.json
+├── config.json.prod
+├── database
+│   └── database.go
 ├── go.mod
 ├── go.sum
-├── Main.go
+├── main.go
 ├── models
 │   └── models.go
 ├── routes
 │   └── routes.go
-└── services
-    └── services.go
+├── services
+│   └── services.go
+└── utils
+    └── util.go
+
 ```
 #### Technology Used
 

@@ -45,11 +45,11 @@ func DelJWT(redisClient *redis.Client, key string) error {
 	return err
 }
 
-func GetJWT(redisClient *redis.Client, key string) error {
+func GetJWT(redisClient *redis.Client, key string) (int64, error) {
 	if !strings.HasPrefix(key, jwtPrefix) {
 		key = jwtPrefix + key
 	}
 	ctx := context.Background()
-	err := redisClient.Get(ctx, key).Err()
-	return err
+	res, err := redisClient.Exists(ctx, key).Result()
+	return res, err
 }

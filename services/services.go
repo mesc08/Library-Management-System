@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"project3/cache"
 	"project3/database"
@@ -110,13 +111,20 @@ func (service *Services) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = cache.GetJWT(service.RedisClient, users.Email)
-	if err != redis.Nil {
+	res, err := cache.GetJWT(service.RedisClient, users.Email)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		err := errors.New("Redis broke")
+		json.NewEncoder(w).Encode(&models.Response{Status: err.Error(), StatusCode: http.StatusBadRequest})
+		return
+	}
+	if res == 1 {
 		w.WriteHeader(http.StatusBadRequest)
 		err := errors.New("user already logged in")
 		json.NewEncoder(w).Encode(&models.Response{Status: err.Error(), StatusCode: http.StatusBadRequest})
 		return
 	}
+
 	dbuser, _ := database.GetUserByEmail(service.Mysql, users.Email)
 
 	check := utils.CheckPasswordHash(users.Password, dbuser.Password)
@@ -138,32 +146,40 @@ func (service *Services) LogoutUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	jwtToken := strings.Split(r.Header["Authorization"][0], " ")[1]
 	logrus.Println(jwtToken)
-	data := cache.GetJWT(service.RedisClient, jwtToken)
-	if data == redis.Nil {
-		w.WriteHeader(http.StatusBadRequest)
-		err := errors.New("json key not found")
-		json.NewEncoder(w).Encode(&models.Response{Status: err.Error(), StatusCode: http.StatusBadRequest})
-		return
-	}
-
-	err := cache.DelJWT(service.RedisClient, jwtToken)
+	data, err := cache.GetJWT(service.RedisClient, jwtToken)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(&models.Response{Status: err.Error(), StatusCode: http.StatusBadRequest})
-		return
+		if err == redis.Nil {
+			w.WriteHeader(http.StatusBadRequest)
+			err := errors.New("json key not found")
+			json.NewEncoder(w).Encode(&models.Response{Status: err.Error(), StatusCode: http.StatusBadRequest})
+			return
+		}
 	}
-	json.NewEncoder(w).Encode(&models.Response{Status: "user successfully loggedout", StatusCode: http.StatusOK})
-
+	if data == 1 {
+		err := cache.DelJWT(service.RedisClient, jwtToken)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(&models.Response{Status: err.Error(), StatusCode: http.StatusBadRequest})
+			return
+		}
+		json.NewEncoder(w).Encode(&models.Response{Status: "user successfully loggedout", StatusCode: http.StatusOK})
+	}
 }
 
 func (service *Services) AddBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	jwtToken := strings.Split(r.Header["Authorization"][0], " ")[1]
 
-	errors := cache.GetJWT(service.RedisClient, jwtToken)
+	data, errors := cache.GetJWT(service.RedisClient, jwtToken)
 	if errors != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(&models.Response{Status: errors.Error(), StatusCode: http.StatusInternalServerError})
+		return
+	}
+	if data == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		err := fmt.Errorf("user not logged in")
+		json.NewEncoder(w).Encode(&models.Response{Status: err.Error(), StatusCode: http.StatusBadRequest})
 		return
 	}
 	var book models.Book
@@ -191,10 +207,16 @@ func (service *Services) GetBooks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	jwtToken := strings.Split(r.Header["Authorization"][0], " ")[1]
 
-	errors := cache.GetJWT(service.RedisClient, jwtToken)
+	data, errors := cache.GetJWT(service.RedisClient, jwtToken)
 	if errors != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(&models.Response{Status: errors.Error(), StatusCode: http.StatusInternalServerError})
+		return
+	}
+	if data == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		err := fmt.Errorf("user not logged in")
+		json.NewEncoder(w).Encode(&models.Response{Status: err.Error(), StatusCode: http.StatusBadRequest})
 		return
 	}
 	params := mux.Vars(r)
@@ -214,15 +236,22 @@ func (service *Services) GetAllBooks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	jwtToken := strings.Split(r.Header["Authorization"][0], " ")[1]
 
-	errors := cache.GetJWT(service.RedisClient, jwtToken)
+	data, errors := cache.GetJWT(service.RedisClient, jwtToken)
 	if errors != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(&models.Response{Status: errors.Error(), StatusCode: http.StatusInternalServerError})
 		return
 	}
+	if data == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		err := fmt.Errorf("user not logged in")
+		json.NewEncoder(w).Encode(&models.Response{Status: err.Error(), StatusCode: http.StatusBadRequest})
+		return
+	}
 	bookdata, error := database.GetAllBooksByKey(service.Mysql)
 
 	if error != nil {
+		logrus.Print(error)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(&models.Response{Status: "error finding books", StatusCode: http.StatusInternalServerError})
 		return
@@ -236,10 +265,16 @@ func (service *Services) UpdateBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	jwtToken := strings.Split(r.Header["Authorization"][0], " ")[1]
 
-	errors := cache.GetJWT(service.RedisClient, jwtToken)
+	data, errors := cache.GetJWT(service.RedisClient, jwtToken)
 	if errors != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(&models.Response{Status: errors.Error(), StatusCode: http.StatusInternalServerError})
+		return
+	}
+	if data == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		err := fmt.Errorf("user not logged in")
+		json.NewEncoder(w).Encode(&models.Response{Status: err.Error(), StatusCode: http.StatusBadRequest})
 		return
 	}
 	params := mux.Vars(r)
@@ -278,11 +313,17 @@ func (service *Services) DeleteBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	jwtToken := strings.Split(r.Header["Authorization"][0], " ")[1]
 
-	errors := cache.GetJWT(service.RedisClient, jwtToken)
+	data, errors := cache.GetJWT(service.RedisClient, jwtToken)
 
 	if errors != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(&models.Response{Status: errors.Error(), StatusCode: http.StatusInternalServerError})
+		return
+	}
+	if data == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		err := fmt.Errorf("user not logged in")
+		json.NewEncoder(w).Encode(&models.Response{Status: err.Error(), StatusCode: http.StatusBadRequest})
 		return
 	}
 	params := mux.Vars(r)

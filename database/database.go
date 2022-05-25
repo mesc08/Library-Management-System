@@ -3,9 +3,10 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"project3/config"
 	"project3/models"
-	"log"
+
 	"github.com/sirupsen/logrus"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -27,13 +28,13 @@ func ConnecToMysql() (*sql.DB, error) {
 
 func CheckUserIfExist(dbSql *sql.DB, email string) (bool, error) {
 	var userid string
-	if err := dbSql.QueryRow(fmt.Sprintf(`SELECT userid from users where emailid='%s'`, email)).Scan(&userid); err != nil{
-		if err == sql.ErrNoRows{
+	if err := dbSql.QueryRow(fmt.Sprintf(`SELECT userid from users where emailid='%s'`, email)).Scan(&userid); err != nil {
+		if err == sql.ErrNoRows {
 			return false, nil
 		}
 		return false, err
-	}	
-	if userid == ""{
+	}
+	if userid == "" {
 		return false, nil
 	}
 
@@ -44,7 +45,7 @@ func AddUser(dbSql *sql.DB, users models.User) error {
 	st := fmt.Sprintf(`INSERT INTO users (userid, emailid, firstname, lastname, password) values('%s','%s','%s','%s','%s')`, users.UserId, users.Email, users.FirstName, users.LastName, users.Password)
 	log.Println(st)
 	_, err := dbSql.Query(st)
-	
+
 	if err != nil {
 		return err
 	}
@@ -80,6 +81,7 @@ func GetBook(dbSql *sql.DB, bookid string) (models.Book, error) {
 
 func GetAllBooksByKey(dbSql *sql.DB) ([]models.Book, error) {
 	var books []models.Book
+	fmt.Printf("dbSql.Ping(): %v\n", dbSql.Ping())
 	st := fmt.Sprintf("SELECT bookid, isbn, title, genre, authorname, authorcountry from books")
 	result, err := dbSql.Query(st)
 	if err != nil {

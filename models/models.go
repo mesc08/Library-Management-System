@@ -1,11 +1,11 @@
 package models
 
 type Book struct {
-	ID     string  `json:"id" validate:"omitempty,uuid"`
-	Isbn   string  `json:"isbn" validate:"required,min=10,max=10"`
-	Title  string  `json:"title" validate:"required"`
-	Genre  string  `json:"genre" validate:"required"`
-	Author *Author `json:"author" validate:"required"`
+	ID     string `json:"id" validate:"omitempty,uuid"`
+	Isbn   string `json:"isbn" validate:"required,min=10,max=10"`
+	Title  string `json:"title" validate:"required"`
+	Genre  string `json:"genre" validate:"required"`
+	Author Author `json:"author" validate:"required"`
 }
 
 type Author struct {
